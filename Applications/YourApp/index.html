@@ -12,7 +12,7 @@
             };
             webSocket.onmessage = function(event) {
                 var content = document.getElementById('content');
-                content.innerHTML = content.innerHTML.concat('<p style="margin-left:20px;height:20px;line-height:20px;">' + event.data + '</p>');
+                content.innerHTML = content.innerHTML.concat('<p style="margin-left:20px;line-height:20px;">' + event.data + '</p>');
                 content.scrollTop = content.scrollHeight;
             }
 
