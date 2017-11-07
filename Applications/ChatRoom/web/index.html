@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <title>workerman chat room</title>
+    <link href="css/main.css" rel="stylesheet">
+</head>
+
+<body>
+    <div class="main">
+        <div id="content"></div>
+        <hr/>
+        <div>
+            <input type="text" id="message" onkeydown="keySend(event)">
+            <button onclick="sendMessage()" class="send_btn">发送</button>
+            <p><span class="emotion">:) 表情</span></p>
+        </div>
+    </div>
+    <script type="text/javascript" src="js/jquery.min.js"></script>
+    <script type="text/javascript" src="js/jquery.qqFace.js"></script>
+    <script type="text/javascript">
+    if (window.WebSocket) {
+        var webSocket = new WebSocket("ws://127.0.0.1:8282");
+        webSocket.onopen = function(event) {
+            console.log(Trim(name));
+            if (Trim(name) == "") {
+                show_prompt();
+            }
+            // 登录
+            var login_data = JSON.stringify({ "type": "login", "client_name": name.replace(/"/g, '\\"') });
+            console.log("websocket握手成功，发送登录数据:" + login_data);
+            webSocket.send(login_data);
+        };
+        webSocket.onmessage = function(event) {
+            var content = document.getElementById('content');
+            content.innerHTML = content.innerHTML.concat('<p class="chat_data">' + replace_em(event.data) + '</p>');
+            content.scrollTop = content.scrollHeight;
+        }
+
+        var sendMessage = function() {
+            var data = document.getElementById('message').value;
+            if (Trim(data) != "") {
+                var chat_data = JSON.stringify({ "type": "chat", "chat_data": data });
+                console.log("发送聊天数据:" + chat_data);
+                webSocket.send(chat_data);
+            }
+            document.getElementById('message').value = "";
+        }
+    } else {
+        console.log("您的浏览器不支持WebSocket");
+    }
+    
+    $(function() {
+        $('.emotion').qqFace({
+            id: 'facebox',
+            assign: 'message',
+            path: 'arclist/' //表情存放的路径
+        });
+    });
+
+    function show_prompt() {
+        name = prompt('输入你的名字：', '');
+        if (!name || name == 'null') {
+            name = '游客';
+        }
+    }
+
+    function keySend(event) {
+            if (event.keyCode == 13) {
+                sendMessage();
+            }
+        }
+
+    function Trim(str) {
+        return str.replace(/(^\s*)|(\s*$)/g, "");
+    }
+
+    function replace_em(str) {
+        str = str.replace(/\</g, '&lt;');
+        str = str.replace(/\>/g, '&gt;');
+        str = str.replace(/\n/g, '<br/>');
+        str = str.replace(/\[em_([0-9]*)\]/g, '<img src="arclist/$1.gif" border="0" />');
+        return str;
+    }
+    </script>
+</body>
+
+</html>

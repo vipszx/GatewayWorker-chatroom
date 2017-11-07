@@ -1,0 +1,62 @@
+.main {
+    width: 600px;
+    margin: 0 auto;
+    border: 1px solid #ccc;
+}
+
+#content {
+    overflow-y: auto;
+    word-break: break-all;
+    height: 300px;
+}
+
+#message {
+    margin-left: 10px;
+    height: 25px;
+    width: 500px;
+}
+
+.chat_data {
+    margin-left: 20px;
+    line-height: 20px;
+}
+
+.send_btn {
+    height: 28px;
+    width: 75px;
+}
+
+
+
+/*表情部分*/
+
+.emotion {
+    width: 42px;
+    height: 20px;
+    padding-left: 20px;
+    cursor: pointer
+}
+
+.emotion:hover {
+    background-position: 2px -28px
+}
+
+.qqFace {
+    margin-top: 4px;
+    background: #fff;
+    padding: 2px;
+    border: 1px #dfe6f6 solid;
+}
+
+.qqFace table td {
+    padding: 0px;
+}
+
+.qqFace table td img {
+    cursor: pointer;
+    border: 1px #fff solid;
+}
+
+.qqFace table td img:hover {
+    border: 1px #0066cc solid;
+}
