@@ -9,21 +9,31 @@
 
 <body>
     <div class="main">
-        <div id="content"></div>
-        <hr/>
-        <div>
-            <input type="text" id="message" onkeydown="keySend(event)">
-            <button onclick="sendMessage()" class="send_btn">发送</button>
-            <p><span class="emotion">:) 表情</span></p>
+        <div class="client_list">
+            <ul>
+            </ul>
         </div>
+        <div class="chat_box">
+            <div id="content"></div>
+            <hr/>
+            <div>
+                <input type="text" id="message" onkeydown="keySend(event)">
+                <button onclick="sendMessage()" class="send_btn">发送</button>
+                <p><span class="emotion">:) 表情</span></p>
+            </div>
+        </div>
+        <!--<div class="room_list">-->
+            <!--<ul>-->
+              <!--<li>房间列表</li>-->
+            <!--</ul>-->
+        <!--</div>-->
     </div>
     <script type="text/javascript" src="js/jquery.min.js"></script>
     <script type="text/javascript" src="js/jquery.qqFace.js"></script>
     <script type="text/javascript">
     if (window.WebSocket) {
-        var webSocket = new WebSocket("ws://127.0.0.1:8282");
+        var webSocket = new WebSocket("ws://10.200.1.184:8282");
         webSocket.onopen = function(event) {
-            console.log(Trim(name));
             if (Trim(name) == "") {
                 show_prompt();
             }
@@ -34,8 +44,30 @@
         };
         webSocket.onmessage = function(event) {
             var content = document.getElementById('content');
-            content.innerHTML = content.innerHTML.concat('<p class="chat_data">' + replace_em(event.data) + '</p>');
-            content.scrollTop = content.scrollHeight;
+            var data = JSON.parse(event.data);
+            switch (data.type) {
+                case 'ping':
+                    webSocket.send('{"type":"pong"}');
+                    break;
+                case 'welcome':
+                case 'login':
+                case 'chat':
+                case 'logout':
+                    content.innerHTML = content.innerHTML.concat('<p class="chat_data">' + replace_em(data.content) + '</p>');
+                    content.scrollTop = content.scrollHeight;
+                    break;
+                case 'client_list':
+                    //先清空列表
+                    $(".client_list ul li").remove();
+                    for (x in data.content) {
+                        //插入
+                        $(".client_list ul").append("<li>" + data.content[x] + "</li>");
+                    }
+                    break;
+                default:
+                    break;
+            }
+            
         }
 
         var sendMessage = function() {

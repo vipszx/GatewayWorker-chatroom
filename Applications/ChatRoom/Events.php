@@ -20,7 +20,6 @@
 //declare(ticks=1);
 
 use \GatewayWorker\Lib\Gateway;
-
 /**
  * 主逻辑
  * 主要是处理 onConnect onMessage onClose 三个方法
@@ -28,6 +27,7 @@ use \GatewayWorker\Lib\Gateway;
  */
 class Events
 {
+
     /**
      * 当客户端连接时触发
      * 如果业务不需此回调可以删除onConnect
@@ -53,16 +53,25 @@ class Events
         }
         // 根据类型执行不同的业务
         switch ($message_data['type']) {
+            case 'pong':
+                return;
             case 'login':
                 $_SESSION['client_name'] = htmlspecialchars($message_data['client_name']);
-                // 向当前client_id发送数据 
-                Gateway::sendToClient($client_id, "你好 {$_SESSION['client_name']}\n");
+                // 向当前client_id发送数据
+                $data['type'] = 'welcome';
+                $data['content'] = "你好 {$_SESSION['client_name']}";
+                Gateway::sendToClient($client_id, json_encode($data, JSON_UNESCAPED_UNICODE));
                 // 向所有人发送
-                Gateway::sendToAll("{$_SESSION['client_name']} 加入了聊天室\n");
+                $data['type'] = 'login';
+                $data['content'] = "{$_SESSION['client_name']} 加入了聊天室";
+                Gateway::sendToAll(json_encode($data, JSON_UNESCAPED_UNICODE));
+                self::getClientList();
                 return;
             case 'chat':
                 // 向所有人发送 
-                Gateway::sendToAll("{$_SESSION['client_name']} 说: " . htmlspecialchars($message_data['chat_data']));
+                $data['type'] = 'chat';
+                $data['content'] = "{$_SESSION['client_name']} 说: " . htmlspecialchars($message_data['chat_data']);
+                Gateway::sendToAll(json_encode($data, JSON_UNESCAPED_UNICODE));
                 return;
         }
     }
@@ -73,6 +82,25 @@ class Events
      */
     public static function onClose($client_id) {
         // 向所有人发送 
-        GateWay::sendToAll("{$_SESSION['client_name']} 退出了聊天室");
+        $data['type'] = 'logout';
+        $data['content'] = "{$_SESSION['client_name']} 退出了聊天室";
+        GateWay::sendToAll(json_encode($data, JSON_UNESCAPED_UNICODE));
+        self::getClientList();
+    }
+
+    public static function getClientList() {
+        // 获取房间内所有用户列表
+        $clients_name_list = [];
+        $clients_list = Gateway::getAllClientSessions();
+        foreach ($clients_list as $tmp_client_id => $item) {
+            if (isset($item['client_name'])) {
+                $clients_name_list[] = $item['client_name'];
+            }
+        }
+        if ($clients_name_list) {
+            $data['type'] = 'client_list';
+            $data['content'] = $clients_name_list;
+            Gateway::sendToAll(json_encode($data, JSON_UNESCAPED_UNICODE));
+        }
     }
 }
