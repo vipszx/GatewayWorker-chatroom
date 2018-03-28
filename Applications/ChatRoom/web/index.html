@@ -20,6 +20,8 @@
                 <input type="text" id="message" onkeydown="keySend(event)">
                 <button onclick="sendMessage()" class="send_btn">发送</button>
                 <p><span class="emotion">:) 表情</span></p>
+                <p><input accept="image/*" name="upimage" id="upload_file" type="file" onchange="imgBase64()"></p>
+                <textarea id="base64_output" hidden></textarea>
             </div>
         </div>
         <!--<div class="room_list">-->
@@ -33,7 +35,7 @@
     <script type="text/javascript" src="js/jquery.qqFace.js"></script>
     <script type="text/javascript">
     if (window.WebSocket) {
-        var webSocket = new WebSocket("ws://10.200.1.184:8282");
+        var webSocket = new WebSocket("ws://192.168.111.129:8282");
         webSocket.onopen = function(event) {
             if (Trim(name) == "") {
                 show_prompt();
@@ -65,6 +67,10 @@
                         $(".client_list ul").append("<li>" + data.content[x] + "</li>");
                     }
                     break;
+                case 'img':
+                    content.innerHTML = content.innerHTML.concat('<p class="chat_img">' + data.content + '</p>');
+                    content.scrollTop = content.scrollHeight;
+                    break;
                 default:
                     break;
             }
@@ -80,10 +86,31 @@
             }
             document.getElementById('message').value = "";
         }
+
+        var sendImg = function() {
+            var data = document.getElementById('base64_output').value;
+            if (Trim(data) != "") {
+                var chat_data = JSON.stringify({ "type": "img", "chat_data": data });
+                console.log("发送聊天数据:" + chat_data);
+                webSocket.send(chat_data);
+            }
+            document.getElementById('upload_file').value = "";
+            document.getElementById('base64_output').value = "";
+        }
     } else {
         console.log("您的浏览器不支持WebSocket");
     }
-    
+
+    function imgBase64() {
+        var file = document.getElementById('upload_file').files[0];
+        r = new FileReader();  //本地预览
+        r.onloadend = function(){
+            document.getElementById('base64_output').value = r.result;
+            sendImg();
+        }
+        r.readAsDataURL(file);    //Base64
+    }
+
     $(function() {
         $('.emotion').qqFace({
             id: 'facebox',
@@ -93,7 +120,7 @@
     });
 
     function show_prompt() {
-        name = prompt('输入你的名字：', '');
+        var name = prompt('输入你的名字：', '');
         if (!name || name == 'null') {
             name = '游客';
         }

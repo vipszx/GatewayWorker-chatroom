@@ -73,6 +73,12 @@ class Events
                 $data['content'] = "{$_SESSION['client_name']} 说: " . htmlspecialchars($message_data['chat_data']);
                 Gateway::sendToAll(json_encode($data, JSON_UNESCAPED_UNICODE));
                 return;
+            case 'img':
+                // 向所有人发送
+                $data['type'] = 'img';
+                $data['content'] = "{$_SESSION['client_name']} 说: " . "<img src={$message_data['chat_data']}>";
+                Gateway::sendToAll(json_encode($data, JSON_UNESCAPED_UNICODE));
+                return;
         }
     }
    

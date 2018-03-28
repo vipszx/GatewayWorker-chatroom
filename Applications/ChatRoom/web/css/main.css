@@ -43,6 +43,13 @@
     line-height: 20px;
 }
 
+.chat_img {
+    margin-left: 20px;
+}
+.chat_img img {
+    max-width: 100%;
+}
+
 .send_btn {
     height: 28px;
     width: 75px;
